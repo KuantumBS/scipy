@@ -49,6 +49,7 @@ functions. Use ``pdist`` for this purpose.
    minkowski        -- the Minkowski distance.
    seuclidean       -- the normalized Euclidean distance.
    sqeuclidean      -- the squared Euclidean distance.
+   riemann          -- the Riemann distance.
 
 Distance functions between two boolean vectors (representing sets) ``u`` and
 ``v``.  As in the case of numerical vectors, ``pdist`` is more efficient for
@@ -101,7 +102,8 @@ __all__ = [
     'sokalsneath',
     'sqeuclidean',
     'squareform',
-    'yule'
+    'yule',
+    'riemann'
 ]
 
 
@@ -258,6 +260,18 @@ def _validate_minkowski_kwargs(X, m, n, **kwargs):
             raise ValueError("p must be greater than 0")
 
     return kwargs
+
+def _validate_riemann_kwargs(X, m, n, **kwargs):
+    """Validates keyword arguments for Riemannian distance calculation."""
+
+    # Riemannian geometry doesn't typically use weights, so remove validation:
+    # kwargs = _validate_weight_with_size(X, m, n, **kwargs)
+
+    if 'p' not in kwargs:
+        kwargs['p'] = 2.  # Default to Euclidean distance (p=2)
+    else:
+        if kwargs['p'] <= 0:
+            raise ValueError("p must be greater than 0")
 
 
 def _validate_pdist_input(X, m, n, metric_info, **kwargs):
@@ -480,6 +494,33 @@ def minkowski(u, v, p=2, w=None):
     dist = norm(u_v, ord=p)
     return dist
 
+def riemann(u, v, p=2, metric_tensor=None):
+    """Computes the Riemannian distance between two points.
+
+    Args:
+        u: First point.
+        v: Second point.
+        p: Order of the norm (default: 2 for Euclidean distance).
+        metric_tensor: (optional) Riemannian metric tensor for the space.
+
+    Returns:
+        Riemannian distance between u and v.
+    """
+
+    u = _validate_vector(u)
+    v = _validate_vector(v)
+    if p <= 0:
+        raise ValueError("p must be greater than 0")
+
+    if metric_tensor is None:
+        # Approximate Riemannian distance using Euclidean distance
+        dist = np.linalg.norm(u - v, ord=p)
+    else:
+        # Calculate Riemannian distance using the metric tensor
+        u_v = u - v
+        dist = np.sqrt(np.tensordot(u_v, np.tensordot(metric_tensor, u_v, axes=1), axes=1))
+
+    return dist
 
 def euclidean(u, v, w=None):
     """
@@ -1850,6 +1891,14 @@ _METRIC_INFOS = [
         cdist_func=_distance_pybind.cdist_yule,
         pdist_func=_distance_pybind.pdist_yule,
     ),
+    MetricInfo(
+     canonical_name='riemann',
+     aka={'riemann'},
+     types=['bool'],
+     dist_func=riemann,
+     cdist_func=_distance_pybind.cdist_riemann,
+     pdist_func=_distance_pybind.pdist_riemann,
+ ),   
 ]
 
 _METRICS = {info.canonical_name: info for info in _METRIC_INFOS}
@@ -1880,7 +1929,7 @@ def pdist(X, metric='euclidean', *, out=None, **kwargs):
         'jaccard', 'jensenshannon', 'kulczynski1',
         'mahalanobis', 'matching', 'minkowski', 'rogerstanimoto',
         'russellrao', 'seuclidean', 'sokalmichener', 'sokalsneath',
-        'sqeuclidean', 'yule'.
+        'sqeuclidean', 'yule' 'riemann'.
     out : ndarray, optional
         The output array.
         If not None, condensed distance matrix Y is stored in this array.
