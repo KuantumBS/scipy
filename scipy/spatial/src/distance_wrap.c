@@ -253,6 +253,35 @@ static PyObject *cdist_minkowski_double_wrap(PyObject *self, PyObject *args,
   return Py_BuildValue("d", 0.0);
 }
 
+static PyObject *cdist_riemannian_double_wrap(PyObject *self, PyObject *args, PyObject *kwargs) {
+    // ... (existing code for parsing arguments and accessing arrays) ...
+
+    // Additional argument for Riemannian metric tensor
+    PyArrayObject *metric_tensor_ = NULL;
+    static char *kwlist[] = {"XA", "XB", "dm", "p", "metric_tensor", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!O!dO!:cdist_riemannian_double_wrap", kwlist,
+                                     &PyArray_Type, &XA_, &PyArray_Type, &XB_,
+                                     &PyArray_Type, &dm_, &p, &PyArray_Type, &metric_tensor_)) {
+        return 0;
+    }
+
+    // ... (existing code for accessing array data and dimensions) ...
+
+    NPY_BEGIN_ALLOW_THREADS;
+    // Conditionally call the Riemannian or Minkowski function
+    if (metric_tensor_ != NULL) {
+        // Calculate Riemannian distance using the provided metric tensor
+        const double *metric_tensor = (const double *)PyArray_DATA(metric_tensor_);
+        cdist_riemannian(XA, XB, dm, mA, mB, n, p, metric_tensor);
+    } else {
+        // Approximate Riemannian distance using Minkowski distance
+        cdist_minkowski(XA, XB, dm, mA, mB, n, p);
+    }
+    NPY_END_ALLOW_THREADS;
+
+    return Py_BuildValue("d", 0.0);
+}
+
 static PyObject *cdist_seuclidean_double_wrap(PyObject *self, PyObject *args, 
                                               PyObject *kwargs) 
 {
@@ -538,6 +567,33 @@ static PyObject *pdist_minkowski_double_wrap(PyObject *self, PyObject *args,
   return Py_BuildValue("d", 0.0);
 }
 
+static PyObject *pdist_riemannian_double_wrap(PyObject *self, PyObject *args, PyObject *kwargs) {
+    // ... (existing code for parsing arguments and accessing arrays) ...
+
+    // Additional argument for Riemannian metric tensor
+    PyArrayObject *metric_tensor_ = NULL;
+    static char *kwlist[] = {"X", "dm", "p", "metric_tensor", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!dO!:pdist_riemannian_double_wrap", kwlist,
+                                     &PyArray_Type, &X_, &PyArray_Type, &dm_, &p, &PyArray_Type, &metric_tensor_)) {
+        return 0;
+    }
+
+    // ... (existing code for accessing array data and dimensions) ...
+
+    NPY_BEGIN_ALLOW_THREADS;
+    // Conditionally call the Riemannian or Minkowski function
+    if (metric_tensor_ != NULL) {
+        // Calculate Riemannian distance using the provided metric tensor
+        const double *metric_tensor = (const double *)PyArray_DATA(metric_tensor_);
+        pdist_riemannian(X, dm, m, n, p, metric_tensor);
+    } else {
+        // Approximate Riemannian distance using Minkowski distance
+        pdist_minkowski(X, dm, m, n, p);
+    }
+    NPY_END_ALLOW_THREADS;
+
+    return Py_BuildValue("d", 0.0);
+
 static PyObject *pdist_seuclidean_double_wrap(PyObject *self, PyObject *args, 
                                               PyObject *kwargs) 
 {
@@ -721,6 +777,9 @@ static PyMethodDef _distanceWrapMethods[] = {
    METH_VARARGS | METH_KEYWORDS},
   {"cdist_minkowski_double_wrap",
    (PyCFunction) cdist_minkowski_double_wrap,
+   METH_VARARGS | METH_KEYWORDS},
+  {"cdist_riemann_double_wrap",
+   (PyCFunction) cdist_riemann_double_wrap,
    METH_VARARGS | METH_KEYWORDS},
   {"cdist_weighted_chebyshev_double_wrap",
    (PyCFunction) cdist_weighted_chebyshev_double_wrap,
