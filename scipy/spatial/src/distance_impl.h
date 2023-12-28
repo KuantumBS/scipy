@@ -428,7 +428,7 @@ weighted_minkowski_distance(const double *u, const double *v, const npy_intp n,
 static inline double 
 riemannian_distance(const double *u, const double *v, const npy_intp n, const double p, const double *metric_tensor) {
     double s = 0.0;
-
+ /*
     if (metric_tensor == nullptr) {
         // Approximate Riemannian distance using Minkowski distance
         return minkowski_distance(u, v, n, p);
@@ -444,6 +444,7 @@ riemannian_distance(const double *u, const double *v, const npy_intp n, const do
         }
         return pow(s, 1.0 / p);
     }
+ */    
 }
 
 #if 0   /* XXX unused */
@@ -674,6 +675,7 @@ static inline int
 pdist_riemannian(const double *X, double *dm, npy_intp num_rows,
                                     const npy_intp num_cols, const double p,
                                     const double *metric_tensor) {
+ /*
     npy_intp i, j;
 
     if (metric_tensor == nullptr) {
@@ -689,6 +691,7 @@ pdist_riemannian(const double *X, double *dm, npy_intp num_rows,
         }
     }
     return 0;
+ */
 }
 
 static inline int
@@ -922,6 +925,7 @@ cdist_riemannian(const double *XA, const double *XB, double *dm,
                                   const npy_intp num_rowsA, const npy_intp num_rowsB,
                                   const npy_intp num_cols, const double p,
                                   const double *metric_tensor) {
+ /*   
     npy_intp i, j;
 
     if (metric_tensor == nullptr) {
@@ -937,6 +941,7 @@ cdist_riemannian(const double *XA, const double *XB, double *dm,
         }
     }
     return 0;
+ */
 }
 
 static inline int
