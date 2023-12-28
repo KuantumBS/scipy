@@ -44,6 +44,7 @@ _MetricKind = Literal[
     'sokalsneath',
     'sqeuclidean', 'sqe', 'sqeuclid',
     'yule',
+    'riemann',
 ]
 
 # Function annotations
@@ -149,6 +150,10 @@ def mahalanobis(
 
 def minkowski(
     u: ArrayLike, v: ArrayLike, p: float = ..., w: ArrayLike | None = ...
+) -> float: ...
+
+def riemann(
+    u: ArrayLike, v: ArrayLike, p: float = 2, metric_tensor: ArrayLike | None = None
 ) -> float: ...
 
 def num_obs_dm(d: ArrayLike) -> int: ...
