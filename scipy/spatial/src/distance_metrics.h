@@ -195,6 +195,26 @@ struct MinkowskiDistance {
     }
 };
 
+struct RiemannianDistance {
+    double p_;
+    StridedView2D<const T> metric_tensor_;  // Assuming metric tensor is available
+
+    template <typename T>
+    void operator()(StridedView2D<T> out, StridedView2D<const T> x, StridedView2D<const T> y) const {
+        if (metric_tensor_.is_null()) {
+            // Approximate Riemannian distance using Euclidean distance
+            MinkowskiDistance{p_}(out, x, y);  // Use existing Minkowski implementation
+        } else {
+            // Calculate Riemannian distance using the metric tensor
+            transform_reduce_2d_(out, x, y, [this](T x, T y) INLINE_LAMBDA {
+                auto diff = x - y;  // Assuming vector subtraction is defined
+                auto squared_norm = tensordot(diff, tensordot(metric_tensor_, diff, axes=1), axes=1);
+                return std::pow(squared_norm, static_cast<T>(p_ / 2.0));
+            });
+        }
+    }
+};
+
 struct EuclideanDistance {
     template <typename T>
     void operator()(StridedView2D<T> out, StridedView2D<const T> x, StridedView2D<const T> y) const {
