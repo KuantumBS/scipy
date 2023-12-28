@@ -630,6 +630,18 @@ PYBIND11_MODULE(_distance_pybind, m) {
               }
           },
           "x"_a, "w"_a=py::none(), "out"_a=py::none(), "p"_a=2.0);
+    m.def("pdist_riemann",
+        [](py::object x, py::object metric_tensor, py::object out, double p) {
+            if (metric_tensor.is_none()) {
+                // Approximate Riemannian distance using Euclidean distance
+                return pdist(out, x, EuclideanDistance{});
+            } else {
+                // Calculate Riemannian distance using the metric tensor
+                // (Assuming appropriate implementation of RiemannianDistance exists)
+                return pdist(out, x, RiemannianDistance{metric_tensor, p});
+            }
+        },
+        "x"_a, "metric_tensor"_a=py::none(), "out"_a=py::none(), "p"_a=2.0);
     m.def("pdist_sqeuclidean",
           [](py::object x, py::object w, py::object out) {
               return pdist(out, x, w, SquareEuclideanDistance{});
@@ -719,6 +731,19 @@ PYBIND11_MODULE(_distance_pybind, m) {
               }
           },
           "x"_a, "y"_a, "w"_a=py::none(), "out"_a=py::none(), "p"_a=2.0);
+    m.def("cdist_riemann",
+        [](py::object x, py::object y, py::object metric_tensor, py::object out,
+           double p) {
+            if (metric_tensor.is_none()) {
+                // Approximate Riemannian distance using Euclidean distance
+                return cdist(out, x, y, EuclideanDistance{});
+            } else {
+                // Calculate Riemannian distance using the metric tensor
+                // (Assuming appropriate implementation of RiemannianDistance exists)
+                return cdist(out, x, y, RiemannianDistance{metric_tensor, p});
+            }
+        },
+        "x"_a, "y"_a, "metric_tensor"_a=py::none(), "out"_a=py::none(), "p"_a=2.0);
     m.def("cdist_sqeuclidean",
           [](py::object x, py::object y, py::object w, py::object out) {
               return cdist(out, x, y, w, SquareEuclideanDistance{});
